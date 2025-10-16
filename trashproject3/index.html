@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TODO</title>
+
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        font-family: Arial, sans-serif;
+        background-color: #f7f7f7;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      #container {
+        background-color: white;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        min-width: 300px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 10px;
+        font-size: 1rem;
+      }
+
+      input[type="text"] {
+        width: 100%;
+        padding: 8px;
+        margin-top: 5px;
+        margin-bottom: 10px;
+        box-sizing: border-box;
+      }
+
+      input[type="checkbox"] {
+        margin-left: 5px;
+      }
+
+      button {
+        margin: 5px 5px 10px 0;
+        padding: 8px 12px;
+        font-size: 1rem;
+        cursor: pointer;
+      }
+
+      #render {
+        margin-top: 20px;
+      }
+
+      ul {
+        list-style: none;
+        padding: 0;
+      }
+
+      li {
+        background: #e0e0e0;
+        margin-bottom: 10px;
+        padding: 10px;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <div id="container">
+        <label>TASK: <input type="text" id="task" required /></label
+        ><label>Done?:</label><input type="checkbox" id="isdone" /><br />
+      </div>
+      <div>
+        <button id="add">new task</button><button id="get">all tasks</button>
+      </div>
+
+      <div id="render"></div>
+    </div>
+  </body>
+
+  <script>
+    // this a frontend script for the todo list
+    const Task = document.getElementById("task");
+    const Completed = document.getElementById("isdone");
+    const addTask = document.getElementById("add");
+    const getTask = document.getElementById("get");
+    const uiRender = document.getElementById("render");
+    addTask.addEventListener("click", async (e) => {
+      e.preventDefault();
+
+      const response = await fetch("http://localhost:3000/api/todos", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          task: Task.value,
+          completed: Completed.checked,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data) {
+        window.alert(data.message);
+      }
+    });
+
+    getTask.addEventListener("click", async (e) => {
+      e.preventDefault();
+      uiRender.innerHTML = "";
+      const response = await fetch("http://localhost:3000/api/todos", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await response.json();
+      const xs = data;
+
+      const ul = document.createElement("ul");
+      if (ul) {
+        for (const todo of xs) {
+          const li = document.createElement("li");
+          li.innerHTML = `<p>Id: ${todo.id} ,Task: ${todo.task} , Completed: ${todo.completed} </p>`;
+          ul.appendChild(li);
+        }
+      }
+      uiRender.appendChild(ul);
+    });
+  </script>
+</html>
