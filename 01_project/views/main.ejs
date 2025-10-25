@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+      }
+
+      header {
+        background-color: #333;
+        color: #fff;
+        padding: 1rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      nav {
+        display: flex;
+        gap: 1.5rem;
+      }
+
+      nav a {
+        color: white;
+        text-decoration: none;
+        font-weight: bold;
+      }
+
+      nav a:hover {
+        color: #ffd700;
+      }
+
+      .user-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .logout-button {
+        background-color: #ff4444;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      .logout-button:hover {
+        background-color: #cc0000;
+      }
+
+      main {
+        padding: 2rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <nav>
+        <a href="/api/v1/profile">Home</a>
+        <a href="/api/v1/main">profile</a>
+        <a href="/api/v1/dashboard">dashboard</a>
+      </nav>
+      <div class="user-info">
+        <span>Welcome, <%= username %></span>
+        <form action="/api/v1/logout" method="POST">
+          <button type="submit" class="logout-button">Logout</button>
+        </form>
+      </div>
+    </header>
+
+    <main>
+      <h2>Send Voice Message</h2>
+      <form
+        id="voiceForm"
+        action="/api/v1/voicesender"
+        method="POST"
+        enctype="multipart/form-data"
+      >
+        <label for="username">Send To (username):</label>
+        <input type="text" id="username" name="username" required />
+        <br /><br />
+
+        <label for="voiceMSG">Upload Voice Message:</label>
+        <input
+          type="file"
+          id="voiceMSG"
+          name="voiceMSG"
+          accept="audio/*"
+          required
+        />
+        <br /><br />
+
+        <button type="submit">Send</button>
+      </form>
+
+      <script src="/js/voiceRecorder.js"></script>
+
+      <button id="startRecording">Start Recording</button>
+      <button id="stopRecording">Stop Recording</button>
+
+      <section>
+        <h1>Welcome, <%= username %></h1>
+
+        <% if (data && data.length) { %>
+        <ul>
+          <% data.forEach(msg => { %>
+          <li>
+            From: <%= msg.sender.username %> <br />
+            <audio controls>
+              <source src="<%= msg.audioUrl %>" type="audio/mpeg" />
+              Your browser does not support the audio element.
+            </audio>
+            <p>Sent at: <%= msg.sentAt.toLocaleString() %></p>
+          </li>
+          <% }) %>
+        </ul>
+        <% } else { %>
+        <p>No messages found.</p>
+        <% } %>
+      </section>
+    </main>
+  </body>
+</html>
