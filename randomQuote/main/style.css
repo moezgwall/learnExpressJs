@@ -4,7 +4,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f5f5f0;
+  background: #181818;
   font-family: sans-serif;
 }
 
@@ -17,18 +17,18 @@ body {
 #verse {
   font-size: 24px;
   font-style: italic;
-  color: #333;
+  color: #eceaea;
   margin-bottom: 15px;
 }
 
 #surahName {
   font-weight: bold;
-  color: #555;
+  color: #eceaea;
 }
 
 #chapterNumber {
   font-size: 14px;
-  color: #888;
+  color: #eceaea;
   margin-bottom: 20px;
 }
 
