@@ -4,6 +4,10 @@ const urlbase = process.env.API_URL;
 let surahList = null;
 const EDITION = 'quran-uthmani';
 
+const asyncHandler = (fn) => (req, res, next) => {
+    Promise.resolve(fn(req, res, next)).catch(next);
+}
+
 /* supposed to return an array of data [{,}] */
 async function getSurahList() {
     if (surahList) return surahList;
@@ -34,20 +38,17 @@ async function getRandomVerse() {
 }
 
 async function show(req, res, next) {
-    try {
-        const data = await getRandomVerse();
-        return res.status(200).json({
-            text: data.text,
-            chapterNumber: data.surah?.number,
-            verseNumber: data.numberInSurah,
-            chapterName: data.surah?.name
 
-        });
-    } catch (errno) {
-        console.error(errno);
-        return res.status(502).json({ error: "could not fetch that verse rn" });
-    }
+    const data = await getRandomVerse();
+    return res.status(200).json({
+        text: data.text,
+        chapterNumber: data.surah?.number,
+        verseNumber: data.numberInSurah,
+        chapterName: data.surah?.name
+
+    });
+
 
 }
 
-module.exports = { getSurahList, getRandomVerse, show };
+module.exports = { getSurahList, getRandomVerse, show: asyncHandler(show) };

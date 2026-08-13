@@ -19,6 +19,11 @@ app.get('/', (req, res) => {
 
 app.use(express.static(path.join(__dirname, "main")));
 app.get('/api/verse', controller.show);
+
+app.use((err, req, res, next) => {
+    console.error(err);
+    res.status(502).json({ error: "could not fetch that verse rn" });
+});
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
