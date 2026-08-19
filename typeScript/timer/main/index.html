@@ -3,6 +3,130 @@
 
 <head>
     <title>Timer</title>
+
+    <style>
+        :root {
+            --bg: #181818;
+            --fg: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--fg);
+            font-family: 'Courier New', 'SF Mono', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2.5rem;
+        }
+
+        #timer-display {
+            font-size: clamp(3rem, 12vw, 7rem);
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            font-variant-numeric: tabular-nums;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.65;
+            }
+        }
+
+        #timer-display.active {
+            animation: none;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        label {
+            font-size: 0.8rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            opacity: 0.55;
+        }
+
+        input#input-time {
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            color: var(--fg);
+            font-family: inherit;
+            font-size: 1.1rem;
+            letter-spacing: 0.1em;
+            text-align: center;
+            padding: 0.4rem 0.2rem;
+            width: 220px;
+            outline: none;
+            transition: border-color 0.25s ease;
+        }
+
+        input#input-time::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        input#input-time:focus {
+            border-bottom-color: var(--fg);
+        }
+
+        .buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        button {
+            background: transparent;
+            color: var(--fg);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            font-family: inherit;
+            font-size: 0.85rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            padding: 0.7rem 1.8rem;
+            border-radius: 2px;
+            cursor: pointer;
+            transition: background 0.2s ease, color 0.2s ease, transform 0.1s ease;
+        }
+
+        button:hover {
+            background: var(--fg);
+            color: var(--bg);
+        }
+
+        button:active {
+            transform: scale(0.96);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            #timer-display {
+                animation: none;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -11,11 +135,14 @@
 
     <h1 id="timer-display">00:00:00</h1>
 
+
     <div>
-        <label>Hours: <input type="number" id="hours" min="0" value="0"></label>
-        <label>Minutes: <input type="number" id="mints" min="0" max="59" value="0"></label>
-        <label>Seconds: <input type="number" id="secs" min="0" max="59" value="0"></label>
+        <label>
+            Set timer :
+            <input type="text" id="input-time" placeholder="012230">
+        </label>
     </div>
+
 
     <button id="start-btn">Start</button>
     <button id="stop-btn">Stop</button>
