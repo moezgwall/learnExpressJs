@@ -31,7 +31,7 @@ async function gsCache<T>(key: string, ttls: number, fetcher: () => Promise<T>):
     return JSON.parse(cached) as T;
   }
   const fresh = await fetcher();
-  await redisClient.set(key, JSON.stringify(fresh), { expireIn: ttls });
+  await redisClient.set(key, JSON.stringify(fresh), { EX: ttls });
   return fresh;
 }
 
