@@ -8,20 +8,20 @@ const errno = require('./errnoMiddleware/errno');
 
 const app = express();
 
-// Middleware
+
 app.use(cors());
 app.use(express.json({ limit: '1mb' }));
 
 const PORT = process.env.PORT || 3000;
 const MONGODB_URI = process.env.MONGODB_URI;
 
-// Validate environment variables
+
 if (!MONGODB_URI) {
   console.error('MONGODB_URI is not set in .env file');
   process.exit(1);
 }
 
-// Connect to MongoDB with timeout
+
 mongoose.connect(MONGODB_URI, {
   serverSelectionTimeoutMS: 5000,
   socketTimeoutMS: 45000,
@@ -32,7 +32,7 @@ mongoose.connect(MONGODB_URI, {
   process.exit(1);
 });
 
-// Root route
+
 app.get('/', (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   res.json({ message: 'API is running', version: '1.0.0', port: PORT });
@@ -47,7 +47,6 @@ app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-// Error handling middleware
 app.use(errno);
 
 const server = app.listen(PORT, () => {
@@ -55,7 +54,7 @@ const server = app.listen(PORT, () => {
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 });
 
-// Graceful shutdown
+
 process.on('SIGINT', async () => {
   console.log('Shutting down gracefully...');
   server.close(async () => {
