@@ -65,13 +65,20 @@
         padding: 10px;
         border-radius: 4px;
       }
+
+      .error {
+        color: red;
+        font-size: 0.9rem;
+        margin-top: 5px;
+      }
     </style>
   </head>
   <body>
     <div>
       <div id="container">
-        <label>TASK: <input type="text" id="task" required /></label
+        <label>TASK: <input type="text" id="task" required maxlength="255" /></label
         ><label>Done?:</label><input type="checkbox" id="isdone" /><br />
+        <div id="error" class="error"></div>
       </div>
       <div>
         <button id="add">new task</button><button id="get">all tasks</button>
@@ -88,12 +95,33 @@
     const addTask = document.getElementById("add");
     const getTask = document.getElementById("get");
     const uiRender = document.getElementById("render");
+    const errorDiv = document.getElementById("error");
+
+    function clearError() {
+      errorDiv.textContent = "";
+    }
+
+    function showError(message) {
+      errorDiv.textContent = message;
+    }
+
+    function clearForm() {
+      Task.value = "";
+      Completed.checked = false;
+      clearError();
+    }
 
     addTask.addEventListener("click", async (e) => {
       e.preventDefault();
+      clearError();
 
       if (!Task.value.trim()) {
-        window.alert("Task cannot be empty");
+        showError("Task cannot be empty");
+        return;
+      }
+
+      if (Task.value.trim().length > 255) {
+        showError("Task cannot exceed 255 characters");
         return;
       }
 
@@ -104,7 +132,7 @@
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            task: Task.value,
+            task: Task.value.trim(),
             completed: Completed.checked,
           }),
         });
@@ -112,21 +140,22 @@
         const data = await response.json();
 
         if (response.ok) {
+          showError("");
+          clearForm();
           window.alert(data.message);
-          Task.value = "";
-          Completed.checked = false;
         } else {
-          window.alert(data.error || "Error adding task");
+          showError(data.error || "Error adding task");
         }
       } catch (err) {
         console.error(err);
-        window.alert("Error adding task");
+        showError("Error adding task");
       }
     });
 
     getTask.addEventListener("click", async (e) => {
       e.preventDefault();
       uiRender.innerHTML = "";
+      clearError();
 
       try {
         const response = await fetch(API_URL, {
@@ -137,7 +166,7 @@
         });
 
         if (!response.ok) {
-          window.alert("Error fetching tasks");
+          showError("Error fetching tasks");
           return;
         }
 
@@ -153,7 +182,7 @@
         uiRender.appendChild(ul);
       } catch (err) {
         console.error(err);
-        window.alert("Error fetching tasks");
+        showError("Error fetching tasks");
       }
     });
   </script>
