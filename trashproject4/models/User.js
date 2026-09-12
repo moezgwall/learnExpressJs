@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { hashPassword } = require('../utils/helpers');
 
 const userSchema = new mongoose.Schema(
   {
@@ -15,7 +16,7 @@ const userSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       match: [
-        /^\w+([\.\-]?\w+)*@\w+([\.\-]?\w+)*(\.\w{2,3})+$/,
+        /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
         'Please provide a valid email address',
       ],
     },
@@ -23,6 +24,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Password is required'],
       minlength: [6, 'Password must be at least 6 characters'],
+      maxlength: [128, 'Password cannot exceed 128 characters'],
       select: false,
     },
     createdAt: {
@@ -32,5 +34,18 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+// Hash password before saving
+userSchema.pre('save', async function (next) {
+  try {
+    if (!this.isModified('password')) {
+      return next();
+    }
+    this.password = await hashPassword(this.password);
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
 
 module.exports = mongoose.model('User', userSchema);
