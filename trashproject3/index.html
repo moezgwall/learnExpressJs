@@ -82,54 +82,79 @@
   </body>
 
   <script>
-    // this a frontend script for the todo list
+    const API_URL = "http://localhost:3000/api/todos";
     const Task = document.getElementById("task");
     const Completed = document.getElementById("isdone");
     const addTask = document.getElementById("add");
     const getTask = document.getElementById("get");
     const uiRender = document.getElementById("render");
+
     addTask.addEventListener("click", async (e) => {
       e.preventDefault();
 
-      const response = await fetch("http://localhost:3000/api/todos", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          task: Task.value,
-          completed: Completed.checked,
-        }),
-      });
+      if (!Task.value.trim()) {
+        window.alert("Task cannot be empty");
+        return;
+      }
 
-      const data = await response.json();
+      try {
+        const response = await fetch(API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            task: Task.value,
+            completed: Completed.checked,
+          }),
+        });
 
-      if (data) {
-        window.alert(data.message);
+        const data = await response.json();
+
+        if (response.ok) {
+          window.alert(data.message);
+          Task.value = "";
+          Completed.checked = false;
+        } else {
+          window.alert(data.error || "Error adding task");
+        }
+      } catch (err) {
+        console.error(err);
+        window.alert("Error adding task");
       }
     });
 
     getTask.addEventListener("click", async (e) => {
       e.preventDefault();
       uiRender.innerHTML = "";
-      const response = await fetch("http://localhost:3000/api/todos", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      const data = await response.json();
-      const xs = data;
 
-      const ul = document.createElement("ul");
-      if (ul) {
+      try {
+        const response = await fetch(API_URL, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          window.alert("Error fetching tasks");
+          return;
+        }
+
+        const xs = await response.json();
+        const ul = document.createElement("ul");
+
         for (const todo of xs) {
           const li = document.createElement("li");
           li.innerHTML = `<p>Id: ${todo.id} ,Task: ${todo.task} , Completed: ${todo.completed} </p>`;
           ul.appendChild(li);
         }
+
+        uiRender.appendChild(ul);
+      } catch (err) {
+        console.error(err);
+        window.alert("Error fetching tasks");
       }
-      uiRender.appendChild(ul);
     });
   </script>
 </html>
