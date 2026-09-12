@@ -1,31 +1,85 @@
-require('dotenv').config(); // .env
+require('dotenv').config();
 
 const express = require('express');
 const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
-const userRouter = require('./routes/route');
-const errno = require('./errnoMiddleware/errno'); 
 const cors = require('cors');
-const PORT = 3000;
+const userRouter = require('./routes/route');
+const errno = require('./errnoMiddleware/errno');
+
 const app = express();
 
-
+// Middleware
 app.use(cors());
-app.use(express.json());
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(express.json({ limit: '1mb' }));
 
-// CONNECT TO OUR MONGODB
-mongoose.connect(process.env.MONGODB_URI).then(()=>{
-    console.log("MongoDB connected ...");}
-).catch( (err)=>{
-    console.log("failed to connect to the MongoDB ...");
-    process.exit(1);
+const PORT = process.env.PORT || 3000;
+const MONGODB_URI = process.env.MONGODB_URI;
+
+// Validate environment variables
+if (!MONGODB_URI) {
+  console.error('MONGODB_URI is not set in .env file');
+  process.exit(1);
+}
+
+// Connect to MongoDB with timeout
+mongoose.connect(MONGODB_URI, {
+  serverSelectionTimeoutMS: 5000,
+  socketTimeoutMS: 45000,
+}).then(() => {
+  console.log('MongoDB connected successfully');
+}).catch((err) => {
+  console.error('Failed to connect to MongoDB:', err.message);
+  process.exit(1);
 });
-app.get('/', (req,res)=>{
-    res.send("API IS RUNNING ON SERVER 3000"); 
+
+// Root route
+app.get('/', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.json({ message: 'API is running', version: '1.0.0', port: PORT });
 });
-// a simple get test 
-app.use('/',userRouter);
+
+// Routes
+app.use('/', userRouter);
+
+// 404 handler for undefined routes
+app.use((req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.status(404).json({ error: 'Route not found' });
+});
+
+// Error handling middleware
 app.use(errno);
-// missing app.use ( users, error-middleware);
-app.listen(PORT, ()=>{console.log(`Server : http://localhost:${PORT}`);});
+
+const server = app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+});
+
+// Graceful shutdown
+process.on('SIGINT', async () => {
+  console.log('Shutting down gracefully...');
+  server.close(async () => {
+    try {
+      await mongoose.connection.close();
+      console.log('MongoDB connection closed');
+      process.exit(0);
+    } catch (err) {
+      console.error('Error closing MongoDB connection:', err);
+      process.exit(1);
+    }
+  });
+});
+
+process.on('SIGTERM', async () => {
+  console.log('SIGTERM received, shutting down...');
+  server.close(async () => {
+    try {
+      await mongoose.connection.close();
+      console.log('MongoDB connection closed');
+      process.exit(0);
+    } catch (err) {
+      console.error('Error closing MongoDB connection:', err);
+      process.exit(1);
+    }
+  });
+});
