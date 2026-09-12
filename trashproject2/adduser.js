@@ -6,7 +6,7 @@ const PORT = 3000;
 
 app.use(express.json());
 
-const uri = "";
+const uri = process.env.MONGODB_URI || "";
 const client = new MongoClient(uri);
 
 app.post('/adding-user', async (req,res)=>{
@@ -21,7 +21,7 @@ app.post('/adding-user', async (req,res)=>{
         const db = client.db('mydb');
         const users = db.collection('USERS');
 
-        const doesExist = await users.findOne({id:id,email:email});
+        const doesExist = await users.findOne({id:id});
 
         if (doesExist){
             return res.status(409).json({message: "already exist ... urmon"});
