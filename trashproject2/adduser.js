@@ -16,10 +16,18 @@ app.post('/adding-user', async (req,res)=>{
         return res.status(503).json({error: "Database not connected"});
     }
 
-    const { id, fullname, email, img } = req.body;
+    let { id, fullname, email, img } = req.body;
 
     if (!id || !fullname || !email){
         return res.status(400).json({error : "not found..."});
+    }
+
+    fullname = fullname.trim();
+    email = email.trim();
+    if (img) img = img.trim();
+
+    if (fullname.length === 0 || email.length === 0) {
+        return res.status(400).json({error: "Fields cannot be empty"});
     }
 
     if (typeof id !== 'number' || typeof fullname !== 'string' || typeof email !== 'string') {
@@ -34,13 +42,19 @@ app.post('/adding-user', async (req,res)=>{
         const db = client.db('mydb');
         const users = db.collection('USERS');
 
-        const doesExist = await users.findOne({$or: [{id: id}, {email: email}]});
+        const doesExist = await users.findOne({$or: [{id: id}, {email: email}]}).maxTimeMS(5000);
 
         if (doesExist){
             return res.status(409).json({message: "already exist ... urmon"});
         }
 
-        await users.insertOne({ id, fullname, email, img: img || null});
+        const userDoc = { id, fullname, email };
+        if (img && img.length > 0) {
+            userDoc.img = img;
+        }
+
+        await users.insertOne(userDoc);
+        console.log(`User added: id=${id}, email=${email}`);
         res.status(201).json({message:"added succc"});
 
     }catch(err){
@@ -50,8 +64,20 @@ app.post('/adding-user', async (req,res)=>{
 });
 
 app.listen(PORT, async ()=>{
+    if (!uri || uri.trim() === "") {
+        console.log("MongoDB URI is empty. Set MONGODB_URI environment variable.");
+        process.exit(1);
+    }
+
     try{
         await client.connect();
+        
+        const db = client.db('mydb');
+        const users = db.collection('USERS');
+        
+        await users.createIndex({id: 1}, {unique: true}).catch(() => {});
+        await users.createIndex({email: 1}, {unique: true}).catch(() => {});
+        
         isConnected = true;
         console.log(`Server is running at http://localhost:${PORT}`);
     }catch(err){
